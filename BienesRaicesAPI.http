@@ -1,0 +1,6 @@
+@BienesRaicesAPI_HostAddress = http://localhost:5283
+
+GET {{BienesRaicesAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
