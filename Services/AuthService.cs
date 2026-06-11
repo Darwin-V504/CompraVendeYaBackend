@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using CompraVendeYaBackend.Data;
 using CompraVendeYaBackend.DTOs;
@@ -43,21 +44,10 @@ public class AuthService
         _context.Usuarios.Add(usuario);
         await _context.SaveChangesAsync();
 
-        var token = GenerateJwtToken(usuario);
+        var accessToken = GenerateJwtToken(usuario);
+        var refreshToken = await CreateRefreshTokenAsync(usuario.IdUsuario);
 
-        return new AuthResponseDto
-        {
-            Token = token,
-            User = new UserDto
-            {
-                IdUsuario = usuario.IdUsuario,
-                Email = usuario.Email,
-                Nombre = usuario.Nombre,
-                Apellido = usuario.Apellido,
-                Rol = usuario.Rol,
-                Telefono = usuario.Telefono
-            }
-        };
+        return BuildAuthResponse(accessToken, refreshToken.Token, usuario);
     }
 
     public async Task<AuthResponseDto> LoginAsync(LoginRequestDto request)
@@ -72,21 +62,40 @@ public class AuthService
         usuario.UltimoLogin = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
-        var token = GenerateJwtToken(usuario);
+        var accessToken = GenerateJwtToken(usuario);
+        var refreshToken = await CreateRefreshTokenAsync(usuario.IdUsuario);
 
-        return new AuthResponseDto
+        return BuildAuthResponse(accessToken, refreshToken.Token, usuario);
+    }
+
+    public async Task<AuthResponseDto> RefreshAsync(string refreshTokenValue)
+    {
+        var stored = await _context.RefreshTokens
+            .Include(r => r.Usuario)
+            .FirstOrDefaultAsync(r => r.Token == refreshTokenValue);
+
+        if (stored == null || stored.Revocado || stored.ExpiresAt <= DateTime.UtcNow)
+            throw new Exception("Refresh token inválido o expirado");
+
+        stored.Revocado = true;
+        await _context.SaveChangesAsync();
+
+        var accessToken = GenerateJwtToken(stored.Usuario);
+        var newRefresh = await CreateRefreshTokenAsync(stored.UsuarioId);
+
+        return BuildAuthResponse(accessToken, newRefresh.Token, stored.Usuario);
+    }
+
+    public async Task LogoutAsync(string refreshTokenValue)
+    {
+        var stored = await _context.RefreshTokens
+            .FirstOrDefaultAsync(r => r.Token == refreshTokenValue);
+
+        if (stored != null && !stored.Revocado)
         {
-            Token = token,
-            User = new UserDto
-            {
-                IdUsuario = usuario.IdUsuario,
-                Email = usuario.Email,
-                Nombre = usuario.Nombre,
-                Apellido = usuario.Apellido,
-                Rol = usuario.Rol,
-                Telefono = usuario.Telefono
-            }
-        };
+            stored.Revocado = true;
+            await _context.SaveChangesAsync();
+        }
     }
 
     public async Task<bool> VerifyTokenAsync(string token)
@@ -131,6 +140,21 @@ public class AuthService
         };
     }
 
+    private async Task<RefreshToken> CreateRefreshTokenAsync(int usuarioId)
+    {
+        var token = new RefreshToken
+        {
+            UsuarioId = usuarioId,
+            Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
+            ExpiresAt = DateTime.UtcNow.AddDays(30),
+            CreadoEn = DateTime.UtcNow,
+            Revocado = false
+        };
+        _context.RefreshTokens.Add(token);
+        await _context.SaveChangesAsync();
+        return token;
+    }
+
     private string GenerateJwtToken(Usuario usuario)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -145,7 +169,7 @@ public class AuthService
                 new Claim(ClaimTypes.Role, usuario.Rol),
                 new Claim("NombreCompleto", $"{usuario.Nombre} {usuario.Apellido}")
             }),
-            Expires = DateTime.UtcNow.AddDays(7),
+            Expires = DateTime.UtcNow.AddHours(1),
             Issuer = _configuration["Jwt:Issuer"],
             Audience = _configuration["Jwt:Audience"],
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -154,4 +178,20 @@ public class AuthService
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
+
+    private static AuthResponseDto BuildAuthResponse(string accessToken, string refreshToken, Usuario usuario) =>
+        new()
+        {
+            Token = accessToken,
+            RefreshToken = refreshToken,
+            User = new UserDto
+            {
+                IdUsuario = usuario.IdUsuario,
+                Email = usuario.Email,
+                Nombre = usuario.Nombre,
+                Apellido = usuario.Apellido,
+                Rol = usuario.Rol,
+                Telefono = usuario.Telefono
+            }
+        };
 }

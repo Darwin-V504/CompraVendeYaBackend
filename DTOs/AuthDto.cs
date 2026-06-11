@@ -19,7 +19,13 @@ public class LoginRequestDto
 public class AuthResponseDto
 {
     public string Token { get; set; } = string.Empty;
+    public string RefreshToken { get; set; } = string.Empty;
     public UserDto User { get; set; } = null!;
+}
+
+public class RefreshRequestDto
+{
+    public string RefreshToken { get; set; } = string.Empty;
 }
 
 public class UserDto
