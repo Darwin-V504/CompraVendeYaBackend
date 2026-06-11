@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace CompraVendeYaBackend.Controllers;
 
@@ -64,7 +65,8 @@ public class MercadoLibreController : ControllerBase
                 });
             }
 
-            var mlData = JsonSerializer.Deserialize<MercadoLibreSearchResponse>(jsonResponse);
+            var mlData = JsonSerializer.Deserialize<MercadoLibreSearchResponse>(jsonResponse,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             var propiedadesMapeadas = MapToPropiedades(mlData);
 
             return Ok(new
@@ -121,18 +123,18 @@ public class MlResult
     public string? Title { get; set; }
     public string? Subtitle { get; set; }
     public decimal? Price { get; set; }
-    public string? CurrencyId { get; set; }
+    [JsonPropertyName("currency_id")] public string? CurrencyId { get; set; }
     public string? Thumbnail { get; set; }
     public string? Permalink { get; set; }
     public string? Condition { get; set; }
-    public string? BuyingMode { get; set; }
+    [JsonPropertyName("buying_mode")] public string? BuyingMode { get; set; }
     public MlAddress? Address { get; set; }
-    public MlSellerAddress? SellerAddress { get; set; }
+    [JsonPropertyName("seller_address")] public MlSellerAddress? SellerAddress { get; set; }
 }
 
 public class MlAddress
 {
-    public string? CityName { get; set; }
+    [JsonPropertyName("city_name")] public string? CityName { get; set; }
 }
 
 public class MlSellerAddress
