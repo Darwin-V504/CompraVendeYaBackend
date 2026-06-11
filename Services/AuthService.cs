@@ -31,7 +31,7 @@ public class AuthService
             Nombre = request.Nombre,
             Apellido = request.Apellido,
             Email = request.Email,
-            PasswordHash = request.Password, // Temporal: guarda la contraseña sin hash
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
             Rol = request.Rol ?? "Agente",
             Telefono = request.Telefono,
             FechaRegistro = DateTime.UtcNow,
@@ -64,7 +64,7 @@ public class AuthService
         if (usuario == null)
             throw new Exception("Email o contraseña incorrectos");
 
-        if (usuario.PasswordHash != request.Password)
+        if (!BCrypt.Net.BCrypt.Verify(request.Password, usuario.PasswordHash))
             throw new Exception("Email o contraseña incorrectos");
 
         usuario.UltimoLogin = DateTime.UtcNow;
