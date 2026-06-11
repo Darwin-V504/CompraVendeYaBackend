@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace CompraVendeYaBackend.DTOs;
 
 public class PropiedadDto
@@ -38,10 +40,10 @@ public class CreatePropiedadDto
     public int? IdAgente { get; set; }
     public int? IdEstado { get; set; }
     public int? IdOperacion { get; set; }
-    public string Titulo { get; set; } = string.Empty;
+    [Required] public string Titulo { get; set; } = string.Empty;
     public string? Descripcion { get; set; }
-    public decimal Precio { get; set; }
-    public string Direccion { get; set; } = string.Empty;
+    [Range(0, double.MaxValue)] public decimal Precio { get; set; }
+    [Required] public string Direccion { get; set; } = string.Empty;
     public decimal? AreaConstruida { get; set; }
     public decimal? AreaTerreno { get; set; }
     public int? Habitaciones { get; set; }

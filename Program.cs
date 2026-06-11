@@ -1,5 +1,6 @@
 using System.Text;
 using CompraVendeYaBackend.Data;
+using CompraVendeYaBackend.Middleware;
 using CompraVendeYaBackend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -89,6 +90,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 app.UseCors();
 

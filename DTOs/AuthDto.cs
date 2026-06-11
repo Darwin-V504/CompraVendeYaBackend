@@ -1,19 +1,21 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace CompraVendeYaBackend.DTOs;
 
 public class RegisterRequestDto
 {
-    public string Nombre { get; set; } = string.Empty;
-    public string Apellido { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
+    [Required] public string Nombre { get; set; } = string.Empty;
+    [Required] public string Apellido { get; set; } = string.Empty;
+    [Required, EmailAddress] public string Email { get; set; } = string.Empty;
+    [Required, MinLength(6)] public string Password { get; set; } = string.Empty;
     public string? Telefono { get; set; }
     public string? Rol { get; set; }
 }
 
 public class LoginRequestDto
 {
-    public string Email { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
+    [Required, EmailAddress] public string Email { get; set; } = string.Empty;
+    [Required] public string Password { get; set; } = string.Empty;
 }
 
 public class AuthResponseDto

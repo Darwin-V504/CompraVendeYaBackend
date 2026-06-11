@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace CompraVendeYaBackend.DTOs;
 
 public class ClienteDto
@@ -14,10 +16,10 @@ public class ClienteDto
 
 public class CreateClienteDto
 {
-    public string Nombre { get; set; } = string.Empty;
-    public string Apellido { get; set; } = string.Empty;
+    [Required] public string Nombre { get; set; } = string.Empty;
+    [Required] public string Apellido { get; set; } = string.Empty;
     public string? Dni { get; set; }
     public string? Telefono { get; set; }
-    public string? Email { get; set; }
+    [EmailAddress] public string? Email { get; set; }
     public string? TipoCliente { get; set; }
 }
