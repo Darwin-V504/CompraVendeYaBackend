@@ -20,6 +20,8 @@ builder.Services.AddScoped<PropietarioService>();
 builder.Services.AddScoped<TransaccionService>();
 builder.Services.AddScoped<ZonaService>();
 builder.Services.AddScoped<PropiedadGuardadaService>();
+builder.Services.AddScoped<CatalogoService>();
+builder.Services.AddScoped<FotoPropiedadService>();
 
 // JWT
 var jwtKey = builder.Configuration["Jwt:Key"]
