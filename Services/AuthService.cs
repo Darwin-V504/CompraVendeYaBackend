@@ -18,6 +18,8 @@ public class AuthService
     {
         _context = context;
         _configuration = configuration;
+        if (string.IsNullOrEmpty(_configuration["Jwt:Key"]))
+            throw new InvalidOperationException("Jwt:Key no está configurada.");
     }
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request)
@@ -92,7 +94,7 @@ public class AuthService
         try
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "CompraVendeYa1234567890SecureKey2024!@#$%");
+            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
 
             tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
@@ -132,7 +134,7 @@ public class AuthService
     private string GenerateJwtToken(Usuario usuario)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "CompraVendeYa1234567890SecureKey2024!@#$%");
+        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
