@@ -17,7 +17,7 @@ public class PropiedadGuardadaService
 
     public async Task<List<PropiedadGuardadaDto>> GetByUsuarioIdAsync(int usuarioId)
     {
-        var guardadas = await _context.PropiedadesGuardadas
+        var guardadas = await _context.PropiedadesGuardada
             .Where(p => p.UsuarioId == usuarioId)
             .OrderByDescending(p => p.FechaGuardado)
             .ToListAsync();
@@ -27,7 +27,7 @@ public class PropiedadGuardadaService
 
     public async Task<PropiedadGuardadaDto?> GetByIdAsync(int id, int usuarioId)
     {
-        var guardada = await _context.PropiedadesGuardadas
+        var guardada = await _context.PropiedadesGuardada
             .FirstOrDefaultAsync(p => p.IdGuardado == id && p.UsuarioId == usuarioId);
 
         return guardada == null ? null : MapToDto(guardada);
@@ -36,7 +36,7 @@ public class PropiedadGuardadaService
     public async Task<PropiedadGuardadaDto> GuardarAsync(int usuarioId, GuardarPropiedadRequestDto request)
     {
         // Verificar si ya está guardada
-        var existe = await _context.PropiedadesGuardadas
+        var existe = await _context.PropiedadesGuardada
             .AnyAsync(p => p.UsuarioId == usuarioId && p.PropiedadIdExterno == request.PropiedadIdExterno);
 
         if (existe)
@@ -64,7 +64,7 @@ public class PropiedadGuardadaService
             FechaGuardado = DateTime.UtcNow
         };
 
-        _context.PropiedadesGuardadas.Add(guardada);
+        _context.PropiedadesGuardada.Add(guardada);
         await _context.SaveChangesAsync();
 
         return MapToDto(guardada);
@@ -72,19 +72,19 @@ public class PropiedadGuardadaService
 
     public async Task<bool> EliminarAsync(int id, int usuarioId)
     {
-        var guardada = await _context.PropiedadesGuardadas
+        var guardada = await _context.PropiedadesGuardada
             .FirstOrDefaultAsync(p => p.IdGuardado == id && p.UsuarioId == usuarioId);
 
         if (guardada == null) return false;
 
-        _context.PropiedadesGuardadas.Remove(guardada);
+        _context.PropiedadesGuardada.Remove(guardada);
         await _context.SaveChangesAsync();
         return true;
     }
 
     public async Task<bool> IsPropiedadGuardadaAsync(int usuarioId, string propiedadIdExterno)
     {
-        return await _context.PropiedadesGuardadas
+        return await _context.PropiedadesGuardada
             .AnyAsync(p => p.UsuarioId == usuarioId && p.PropiedadIdExterno == propiedadIdExterno);
     }
 

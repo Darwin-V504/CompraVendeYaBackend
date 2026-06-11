@@ -73,14 +73,16 @@ public class PropiedadService
         await _context.SaveChangesAsync();
 
         // Agregar fotos
+        bool esPrimera = true;
         foreach (var url in dto.FotosUrls)
         {
             _context.FotosPropiedad.Add(new FotoPropiedad
             {
                 IdPropiedad = propiedad.IdPropiedad,
                 UrlFoto = url,
-                EsPrincipal = propiedad.Fotos.Count == 0
+                EsPrincipal = esPrimera
             });
+            esPrimera = false;
         }
         await _context.SaveChangesAsync();
 
@@ -117,18 +119,17 @@ public class PropiedadService
         if (dto.FotosUrls.Any())
         {
             _context.FotosPropiedad.RemoveRange(propiedad.Fotos);
+            bool esPrimera = true;
             foreach (var url in dto.FotosUrls)
             {
                 _context.FotosPropiedad.Add(new FotoPropiedad
                 {
                     IdPropiedad = propiedad.IdPropiedad,
                     UrlFoto = url,
-                    EsPrincipal = false
+                    EsPrincipal = esPrimera
                 });
+                esPrimera = false;
             }
-            // Marcar primera como principal
-            var firstFoto = propiedad.Fotos.FirstOrDefault();
-            if (firstFoto != null) firstFoto.EsPrincipal = true;
         }
 
         await _context.SaveChangesAsync();
