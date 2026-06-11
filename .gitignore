@@ -9,3 +9,6 @@ obj/
 # OS
 .DS_Store
 Thumbs.db
+# Credenciales locales
+appsettings.Development.json
+appsettings.*.local.json
